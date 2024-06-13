@@ -12,9 +12,13 @@ class AnaSayfa extends StatefulWidget {
   State<AnaSayfa> createState() => _AnaSayfaState();
 }
 
-class _AnaSayfaState extends State<AnaSayfa> {
+class _AnaSayfaState extends State<AnaSayfa>
+    with SingleTickerProviderStateMixin {
   List<Havadurumu> _weathers = [];
   String? _city; // Şehir bilgisini saklamak için bir değişken
+  PageController _pageController = PageController();
+  AnimationController? _animationController;
+  Animation<double>? _animation;
 
   void _getWeatherData() async {
     try {
@@ -35,6 +39,31 @@ class _AnaSayfaState extends State<AnaSayfa> {
     super.initState();
     initializeDateFormatting('tr_TR', null); // Türkçe dil verilerini başlat
     _getWeatherData();
+
+    _animationController = AnimationController(
+      vsync: this,
+      duration: Duration(milliseconds: 500),
+    );
+
+    _animation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _animationController!, curve: Curves.easeInOut),
+    );
+
+    _pageController.addListener(() {
+      if (_pageController.page == _pageController.page!.roundToDouble()) {
+        if (_pageController.page == 0 ||
+            _pageController.page == _weathers.length - 1) {
+          _animationController!.forward(from: 0.0);
+        }
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    _animationController?.dispose();
+    super.dispose();
   }
 
   @override
@@ -55,80 +84,99 @@ class _AnaSayfaState extends State<AnaSayfa> {
         child: _weathers.isEmpty
             ? CircularProgressIndicator()
             : PageView.builder(
+                controller: _pageController,
                 itemCount: _weathers.length,
                 itemBuilder: (context, index) {
-                  return SingleChildScrollView(
-                    child: Container(
-                      padding: const EdgeInsets.all(30),
-                      margin: const EdgeInsets.all(20),
-                      decoration: BoxDecoration(
-                        color: Colors.black,
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Column(
-                        children: [
-                          Image.network(_weathers[index].ikon, width: 200),
-                          Padding(
-                            padding: const EdgeInsets.only(top: 40, bottom: 60),
-                            child: Column(
-                              children: [
-                                Text(
-                                  "${_weathers[index].gun}\n ${_weathers[index].durum.toUpperCase()} ${_weathers[index].derece}°",
-                                  textAlign: TextAlign.center,
-                                  style: const TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                                SizedBox(height: 10),
-                                Text(
-                                  formattedDate,
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 16,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    "En Düşük: ${_weathers[index].min} °",
-                                    style: TextStyle(color: Colors.white),
-                                  ),
-                                  Text(
-                                    "En Yüksek: ${_weathers[index].max} °",
-                                    style: TextStyle(color: Colors.white),
-                                  ),
-                                ],
-                              ),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.end,
-                                children: [
-                                  Text(
-                                    "Gece: ${_weathers[index].gece} °",
-                                    style: TextStyle(color: Colors.white),
-                                  ),
-                                  Text(
-                                    "Nem: ${_weathers[index].nem}",
-                                    style: TextStyle(color: Colors.white),
-                                  ),
-                                ],
-                              )
-                            ],
-                          )
-                        ],
-                      ),
-                    ),
-                  );
+                  if (index == 0 || index == _weathers.length - 1) {
+                    return AnimatedBuilder(
+                      animation: _animation!,
+                      builder: (context, child) {
+                        return RotationTransition(
+                          turns: _animation!,
+                          child: _buildWeatherContent(
+                              context, index, formattedDate),
+                        );
+                      },
+                    );
+                  } else {
+                    return _buildWeatherContent(context, index, formattedDate);
+                  }
                 },
               ),
+      ),
+    );
+  }
+
+  Widget _buildWeatherContent(
+      BuildContext context, int index, String formattedDate) {
+    return SingleChildScrollView(
+      child: Container(
+        padding: const EdgeInsets.all(30),
+        margin: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: Colors.black,
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Column(
+          children: [
+            Image.network(_weathers[index].ikon, width: 200),
+            Padding(
+              padding: const EdgeInsets.only(top: 40, bottom: 60),
+              child: Column(
+                children: [
+                  Text(
+                    "${_weathers[index].gun}\n ${_weathers[index].durum.toUpperCase()} ${_weathers[index].derece}°",
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                  SizedBox(height: 10),
+                  Text(
+                    formattedDate,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      "En Düşük: ${_weathers[index].min} °",
+                      style: TextStyle(color: Colors.white),
+                    ),
+                    Text(
+                      "En Yüksek: ${_weathers[index].max} °",
+                      style: TextStyle(color: Colors.white),
+                    ),
+                  ],
+                ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text(
+                      "Gece: ${_weathers[index].gece} °",
+                      style: TextStyle(color: Colors.white),
+                    ),
+                    Text(
+                      "Nem: ${_weathers[index].nem}",
+                      style: TextStyle(color: Colors.white),
+                    ),
+                  ],
+                )
+              ],
+            )
+          ],
+        ),
       ),
     );
   }
