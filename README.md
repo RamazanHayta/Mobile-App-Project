@@ -1,10 +1,12 @@
 Kullanılan Paketler:
+
 flutter/material.dart: Flutter'ın temel UI bileşenlerini içerir.
 flutter/services.dart: Sistem ile ilgili işlemleri yapmak için kullanılır.
 intl: Tarih ve saat formatlama işlemleri için kullanılır.
 dio: HTTP isteklerini yapmak için kullanılır.
 geocoding: Koordinatlardan adres bilgilerini almak için kullanılır.
 geolocator: Kullanıcının konumunu almak için kullanılır.
+
 Ana Sınıf ve Fonksiyonlar:
 AnaSayfa Sınıfı:
 AnaSayfa sınıfı, StatefulWidget sınıfından türetilmiştir ve uygulamanın ana ekranını temsil eder.
@@ -27,6 +29,7 @@ HavaDurumuServisi Sınıfı:
 Bu sınıf, konum ve hava durumu bilgilerini almak için gerekli fonksiyonları içerir.
 
 Fonksiyonlar:
+
 getLocation: Kullanıcının konumunu alır ve şehir adını döndürür.
 getWeatherData: Hava durumu API'sine istek yaparak hava durumu verilerini alır ve bir liste olarak döndürür.
 Havadurumu Sınıfı:
@@ -42,6 +45,7 @@ min: En düşük sıcaklık.
 max: En yüksek sıcaklık.
 gece: Gece sıcaklığı.
 nem: Nem oranı.
+
 Yapıcılar:
 
 Havadurumu: Doğrudan değişkenlerle nesne oluşturur.
